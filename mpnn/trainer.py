@@ -140,17 +140,15 @@ class Trainer:
                 trn_preds = self.model(trn_batch)
 
                 # backprop
-                loss = self.loss_fn(trn_preds, trn_batch)
+                loss = self.loss_fn(self.epoch, trn_preds, trn_batch)
                 loss.backward()
                 if clip_grad > 0:
                     torch.nn.utils.clip_grad_norm_(self.model.parameters(), clip_grad)
                 self.optimizer.step()
-
                 step_loss = loss.detach().cpu().numpy()
                 trn_loss += step_loss
 
                 print(f"\r step: {s}/{trn_steps} step_loss: {step_loss:5.5f}", end="\r")
-
                 del trn_batch
             trn_loss /= trn_steps
 
@@ -162,9 +160,13 @@ class Trainer:
                     for s in range(val_steps):
                         val_batch = next(val_generator)
                         val_preds = self.model(val_batch)
-                        loss = self.loss_fn(val_preds, val_batch)
+                        loss = self.loss_fn(self.epoch, val_preds, val_batch)
                         step_loss = loss.detach().cpu().numpy()
                         val_loss += step_loss
+                        print(
+                            f"\r val: {s}/{val_steps} step_loss: {step_loss:5.5f}",
+                            end="\r",
+                        )
                         del val_batch
                     val_loss /= val_steps
             else:

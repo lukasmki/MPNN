@@ -1,5 +1,6 @@
 import numpy as np
 from mpnn.data import make_batches
+from torch import nn
 
 
 class Evaluator:
@@ -8,6 +9,12 @@ class Evaluator:
         self.model = model
         self.output_path = output_path
         self.max_n_neigh = max_n_neigh
+        self.parallelized = False
+
+        if (type(device) is list) and len(device) > 1:
+            self.multi_gpu = True
+        else:
+            self.multi_gpu = False
 
     def eval(self, input, batch_size):
         # data
@@ -16,6 +23,12 @@ class Evaluator:
         elif type(input) is dict:
             data = input
         gen, steps = make_batches(data, batch_size, self.device[0], self.max_n_neigh)
+
+        # move model to device
+        self.model.to(self.device[0])
+        if (self.multi_gpu) and not self.parallelized:
+            self.model = nn.DataParallel(self.model, device_ids=self.device)
+            self.parallelized = True
 
         # iterate over batches
         output = {}

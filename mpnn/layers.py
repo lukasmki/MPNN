@@ -15,12 +15,13 @@ class Dense(nn.Linear):
         weight_init=xavier_uniform_,
         weight_gain=1.0,
         bias_init=zeros_,
+        precision=torch.float64,
     ):
         self.weight_init = weight_init
         self.weight_gain = weight_gain
         self.bias_init = bias_init
 
-        super(Dense, self).__init__(in_features, out_features, bias)
+        super(Dense, self).__init__(in_features, out_features, bias, dtype=precision)
 
         self.activation = activation
         self.dropout = nn.Dropout(dropout) if dropout else dropout
@@ -46,7 +47,7 @@ class RadialBesselLayer(nn.Module):
         self.inv_cutoff = 1.0 / cutoff
         self.frequencies = nn.Parameter(
             torch.tensor(
-                np.arange(1, n_radial + 1) * np.pi, dtype=torch.float32, device=device
+                np.arange(1, n_radial + 1) * np.pi, dtype=torch.float64, device=device
             ),
             requires_grad=False,
         )
@@ -118,7 +119,7 @@ class ShellProvider(nn.Module):
             n = NC.max()
 
             # don't determine number of neighbors for cutoff, just pad to max_n_neighbors
-            n = N.size(2)
+            # n = N.size(2)
 
             # fill tensors with values
             D = torch.zeros((B, A, n), device=R.device)

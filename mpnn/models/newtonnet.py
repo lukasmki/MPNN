@@ -19,7 +19,7 @@ class NewtonNet(nn.Module):
         resolution=20,
         activation=swish,
         cutoff=5.0,
-        shell_cutoff=10.0,
+        shell_cutoff=None,
     ):
         super(NewtonNet, self).__init__()
         self.device = device
@@ -29,7 +29,7 @@ class NewtonNet(nn.Module):
         self.activation = activation
         self.cutoff = cutoff
 
-        self.atom_embedding = nn.Embedding(10, 128, padding_idx=0)
+        self.atom_embedding = nn.Embedding(10, 128, padding_idx=0, dtype=torch.float64)
 
         self.shell = ShellProvider(cutoff=shell_cutoff)
         self.distance_expansion = RadialBesselLayer(
