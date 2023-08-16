@@ -9,7 +9,12 @@ Message Passing Neural Network Implementation
 ```bash
 > conda env create -f environment.yml
 > conda activate mpnn
+```
+
+```bash
 > pip install -e .
+OR 
+> python setup.py develop
 ```
 
 ### Manually install dependencies
@@ -19,5 +24,10 @@ Message Passing Neural Network Implementation
 > conda activate mpnn
 > conda install cudatoolkit
 > conda install pytorch pytorch-cuda -c pytorch -c nvidia
+```
+
+```bash
 > pip install -e .
+OR 
+> python setup.py develop
 ```

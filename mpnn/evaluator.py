@@ -16,7 +16,7 @@ class Evaluator:
         else:
             self.multi_gpu = False
 
-    def eval(self, input, batch_size):
+    def eval(self, input, batch_size=1):
         # data
         if type(input) is str:
             data = dict(np.load(input, allow_pickle=True))
@@ -44,11 +44,17 @@ class Evaluator:
                     output[k] = [v.detach().cpu().numpy()]
 
             # output
-            print(f"\r {s / steps * 100: 3f}", end="\r")
+            print(f"\r running...{s / steps:3.2%}", end="\r")
+            del batch
 
         # concatenate results
+        shapes = np.array([list(x.shape) for x in output["N"]])
+        nframes = np.sum(shapes[::, 0])
+        natoms = np.max(shapes[::, 1])
+        nneigh = np.max(shapes[::, 2])
+
         for k, v in output.items():
-            output[k] = np.concatenate(v, axis=0)
+            output[k] = np.concatenate(output[k], axis=0)
 
         if self.output_path:
             np.savez_compressed(self.output_path, **output)

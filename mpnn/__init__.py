@@ -1,6 +1,6 @@
-__name__ = "PaulingNet"
+__name__ = "MPNN"
 __author__ = "Lukas Kim"
 __version__ = 1.0
 
-from mpnn.trainer import Trainer
 from mpnn.evaluator import Evaluator
+from mpnn.trainer import Trainer
