@@ -11,16 +11,16 @@ class Evaluator:
         self.max_n_neigh = max_n_neigh
         self.parallelized = False
 
-        if (type(device) is list) and len(device) > 1:
+        if isinstance(device, list) and len(device) > 1:
             self.multi_gpu = True
         else:
             self.multi_gpu = False
 
     def eval(self, input, batch_size=1):
         # data
-        if type(input) is str:
+        if isinstance(input, str):
             data = dict(np.load(input, allow_pickle=True))
-        elif type(input) is dict:
+        elif isinstance(input, dict):
             data = input
         gen, steps = make_batches(data, batch_size, self.device[0], self.max_n_neigh)
 

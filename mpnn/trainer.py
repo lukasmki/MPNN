@@ -84,9 +84,9 @@ class Trainer:
 
         # load validation data
         if validation_set is not None:
-            if type(validation_set) is str:
+            if isinstance(validation_set, str):
                 val_data = dict(np.load(validation_set, allow_pickle=True))
-            elif type(validation_set) is dict:
+            elif isinstance(validation_set, dict):
                 val_data = validation_set
             val_generator, val_steps = make_batches(
                 val_data, val_batch_size, self.device[0], max_n_neigh
@@ -97,9 +97,9 @@ class Trainer:
 
         # load test data
         if test_set is not None:
-            if type(test_set) is str:
+            if isinstance(test_set, str):
                 test_data = dict(np.load(test_set, allow_pickle=True))
-            elif type(test_set) is dict:
+            elif isinstance(test_set, dict):
                 test_data = test_set
             tst_generator, tst_steps = make_batches(
                 test_data, test_batch_size, self.device[0], max_n_neigh
