@@ -7,7 +7,6 @@ from mpnn.layers import (
     PolynomialCutoff,
     ShellProvider,
 )
-from mpnn.utils import swish
 
 
 class NewtonNet(nn.Module):
@@ -17,7 +16,7 @@ class NewtonNet(nn.Module):
         n_features=128,
         n_interax=3,
         resolution=20,
-        activation=swish,
+        activation=nn.SiLU(),
         cutoff=5.0,
         shell_cutoff=None,
     ):

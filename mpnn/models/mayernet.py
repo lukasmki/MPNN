@@ -2,7 +2,6 @@ import torch
 from torch import nn
 from torch.autograd import grad
 from mpnn.models import MPNN
-from mpnn.utils import swish
 
 
 class MayerNet(nn.Module):
@@ -12,7 +11,7 @@ class MayerNet(nn.Module):
         n_features=128,
         n_interax=3,
         resolution=20,
-        activation=swish,
+        activation=nn.SiLU(),
         cutoff=5.0,
         shell_cutoff=10.0,
     ):
@@ -87,9 +86,9 @@ class MayerNet(nn.Module):
         )
 
         DELTA = self.delta(data)
-        dE = torch.sum(DELTA["Ai"], dim=1)
+        E_delta = torch.sum(DELTA["Ai"], dim=1)
 
-        E = E_coul + E_bond + dE
+        E = E_coul + E_bond + E_delta
 
         F = grad(
             E,

@@ -1,7 +1,7 @@
 import torch
 from torch import nn
+from torch.autograd import grad
 from mpnn.layers import Dense, RadialBesselLayer, PolynomialCutoff, ShellProvider
-from mpnn.utils import swish
 
 
 class MPNN(nn.Module):
@@ -11,7 +11,7 @@ class MPNN(nn.Module):
         n_features=128,
         n_interax=1,
         resolution=20,
-        activation=swish,
+        activation=nn.SiLU(),
         cutoff=5.0,
         shell_cutoff=10.0,
     ):
@@ -24,7 +24,6 @@ class MPNN(nn.Module):
         self.cutoff = cutoff
 
         self.atom_embedding = nn.Embedding(10, 128, padding_idx=0)
-        self.pair_embedding = nn.Embedding(10, 128, padding_idx=0)
         self.shell = ShellProvider(cutoff=shell_cutoff)
         self.distance_expansion = RadialBesselLayer(
             resolution, cutoff=cutoff, device=device

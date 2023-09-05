@@ -8,7 +8,6 @@ from mpnn.layers import (
     ShellProvider,
     ScaleShift,
 )
-from mpnn.utils import swish
 
 
 class PaulingNet(nn.Module):
@@ -18,7 +17,7 @@ class PaulingNet(nn.Module):
         n_features=128,
         n_interax=3,
         resolution=20,
-        activation=swish,
+        activation=nn.SiLU(),
         cutoff=5.0,
         shell_cutoff=10.0,
         normalizer=(0.0, 1.0),
