@@ -4,7 +4,7 @@ from torch.autograd import grad
 from mpnn.layers import Dense, RadialBesselLayer, PolynomialCutoff, ShellProvider
 
 
-class MPNN(nn.Module):
+class GENMP(nn.Module):
     def __init__(
         self,
         device,
@@ -15,7 +15,7 @@ class MPNN(nn.Module):
         cutoff=5.0,
         shell_cutoff=10.0,
     ):
-        super(MPNN, self).__init__()
+        super(GENMP, self).__init__()
         self.device = device
 
         self.n_features = n_features
@@ -24,6 +24,7 @@ class MPNN(nn.Module):
         self.cutoff = cutoff
 
         self.atom_embedding = nn.Embedding(10, 128, padding_idx=0, dtype=torch.float64)
+        self.pair_embedding = nn.Embedding(10, 128, padding_idx=0, dtype=torch.float64)
         self.shell = ShellProvider(cutoff=shell_cutoff)
         self.distance_expansion = RadialBesselLayer(
             resolution, cutoff=cutoff, device=device
@@ -39,8 +40,8 @@ class MPNN(nn.Module):
 
     def forward(self, data):
         R, Z, N, NM = data["R"], data["Z"], data["N"], data["NM"]
-        R.requires_grad_()
         D, V, N, NM = self.shell(R, N, NM)
+        R.requires_grad_()
         n_batch, n_atoms, n_neigh = N.size()
 
         rbf = self.distance_expansion(D)
@@ -62,33 +63,40 @@ class MPNN(nn.Module):
 
         # prediciton
         output = {"R": R, "Z": Z, "N": N, "NM": NM, "D": D, "V": V}
-        atom_pred = self.atomic_property(a).squeeze(-1)
+
+        atom_pred = self.atomic_property(a)
         pair_pred = self.pair_property(p)
 
-        pair_pred = torch.square(pair_pred)
-        tap = 0.5 + 0.5 * torch.tanh(10.0 * (5.0 - D))
-        pair_pred = pair_pred.squeeze(-1) * (D != 0) * tap
+        output.update({"Ai": atom_pred.squeeze(-1), "Pij": pair_pred.squeeze(-1)})
 
-        GAi = grad(
-            atom_pred,
+        # compute graph energy
+        # reshape (B, A, A)
+        A = torch.zeros((n_batch, n_atoms, n_atoms, 1), dtype=torch.float64)
+        A[::, ~torch.eye(n_atoms, dtype=torch.bool)] = pair_pred[
+            ::, torch.ones((n_atoms, n_neigh), dtype=torch.bool)
+        ]
+        A[::, torch.eye(n_atoms, dtype=torch.bool)] = atom_pred
+        A = A.squeeze(-1)
+
+        eigval, eigvec = torch.linalg.eig(A)
+        graph_energy = torch.sum(eigval.real, dim=-1).unsqueeze(-1)
+
+        # and the gradients
+        graph_gradients = grad(
+            graph_energy,
             R,
-            grad_outputs=torch.ones_like(atom_pred),
+            grad_outputs=torch.ones_like(graph_energy),
             create_graph=False,
             retain_graph=True,
-        )[0]
-
-        GPij = grad(
-            pair_pred,
-            D,
-            grad_outputs=torch.ones_like(pair_pred),
-            create_graph=False,
-            retain_graph=True,
-        )[0]
-
-        output.update({"a": a, "p": p})
-        output.update({"GAi": GAi, "GPij": GPij})
-        output.update({"Ai": atom_pred, "Pij": pair_pred.squeeze(-1)})
-
+        )
+        output.update(
+            {
+                "E(G)": graph_energy,
+                "F(G)": graph_gradients,
+                "E(val)": eigval,
+                "E(vec)": eigvec,
+            }
+        )
         return output
 
 

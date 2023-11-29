@@ -15,13 +15,13 @@ class Dense(nn.Linear):
         weight_init=xavier_uniform_,
         weight_gain=1.0,
         bias_init=zeros_,
-        precision=torch.float64,
+        dtype=torch.float64,
     ):
         self.weight_init = weight_init
         self.weight_gain = weight_gain
         self.bias_init = bias_init
 
-        super(Dense, self).__init__(in_features, out_features, bias, dtype=precision)
+        super(Dense, self).__init__(in_features, out_features, bias, dtype=dtype)
 
         self.activation = activation
         self.dropout = nn.Dropout(dropout) if dropout else dropout
@@ -118,7 +118,7 @@ class ShellProvider(nn.Module):
                     NM_temp[i][j] = torch.tensor([1] * num_neigh)
             n = NC.max()
 
-            # don't determine number of neighbors for cutoff, just pad to max_n_neighbors
+            # don't determine number of neighbors for cutoff, just pad to max_n_neighbor
             # n = N.size(2)
 
             # fill tensors with values

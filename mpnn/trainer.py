@@ -14,7 +14,7 @@ class Trainer:
         self.loss_fn = loss_fn
         self.optimizer = optimizer
 
-        self.multi_gpu = (type(device) is list) and (len(device) > 1)
+        self.multi_gpu = isinstance(device, list) and (len(device) > 1)
         self.parallelized = False
 
         self.path_iter = 1
@@ -73,9 +73,9 @@ class Trainer:
         max_n_neigh=None,
     ):
         # load training data
-        if type(training_set) is str:
+        if isinstance(training_set, str):
             train_data = dict(np.load(training_set, allow_pickle=True))
-        elif type(training_set) is dict:
+        elif isinstance(training_set, dict):
             train_data = training_set
 
         trn_generator, trn_steps = make_batches(
@@ -198,7 +198,7 @@ class Trainer:
                     tst_energy_mae /= tst_steps * test_batch_size
                     tst_forces_mae /= tst_steps * test_batch_size
 
-            # save model with best validation loss
+            # save model with best validation loss (or training loss if no val set (see line 173))
             if val_loss < self.best_val_loss:
                 self.best_val_loss = val_loss
                 save_model = self.model.module if self.multi_gpu else self.model
