@@ -55,7 +55,7 @@ class RadialBesselLayer(nn.Module):
     def forward(self, distances):
         d_scaled = distances * self.inv_cutoff
         d_scaled = d_scaled.unsqueeze(-1)
-        return torch.sin(self.frequencies * d_scaled)
+        return torch.sinc(self.frequencies * d_scaled)
 
 
 class PolynomialCutoff(nn.Module):
@@ -139,8 +139,8 @@ class ShellProvider(nn.Module):
 class ScaleShift(nn.Module):
     def __init__(self, mean, stdev):
         super(ScaleShift, self).__init__()
-        self.register_buffer("mean", mean)
-        self.register_buffer("stddev", stdev)
+        self.register_parameter("mean", mean)
+        self.register_parameter("stddev", stdev)
 
     def forward(self, input):
         y = input * self.stddev + self.mean
