@@ -55,7 +55,9 @@ class RadialBesselLayer(nn.Module):
     def forward(self, distances):
         d_scaled = distances * self.inv_cutoff
         d_scaled = d_scaled.unsqueeze(-1)
-        return torch.sin(self.frequencies * d_scaled)
+
+        rbf = torch.sin(self.frequencies * d_scaled)  # / (self.frequencies * d_scaled)
+        return rbf
 
 
 class PolynomialCutoff(nn.Module):
@@ -120,6 +122,9 @@ class ShellProvider(nn.Module):
 
             # don't determine number of neighbors for cutoff, just pad to max_n_neighbor
             # n = N.size(2)
+            # TODO: fix this because having automatically determined number of
+            #   neighbors messes up the padding in the output.
+            #   All of this needs a rewrite.
 
             # fill tensors with values
             D = torch.zeros((B, A, n), device=R.device)

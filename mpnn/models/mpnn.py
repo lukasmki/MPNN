@@ -8,6 +8,7 @@ class MPNN(nn.Module):
     def __init__(
         self,
         device,
+        max_z=10,
         n_features=128,
         n_interax=1,
         resolution=20,
@@ -23,7 +24,9 @@ class MPNN(nn.Module):
         self.activation = activation
         self.cutoff = cutoff
 
-        self.atom_embedding = nn.Embedding(10, 128, padding_idx=0, dtype=torch.float64)
+        self.atom_embedding = nn.Embedding(
+            max_z, n_features, padding_idx=0, dtype=torch.float64
+        )
         self.shell = ShellProvider(cutoff=shell_cutoff)
         self.distance_expansion = RadialBesselLayer(
             resolution, cutoff=cutoff, device=device
@@ -65,7 +68,7 @@ class MPNN(nn.Module):
         atom_pred = self.atomic_property(a).squeeze(-1)
         pair_pred = self.pair_property(p)
 
-        pair_pred = torch.square(pair_pred)
+        # pair_pred = torch.square(pair_pred)
         tap = 0.5 + 0.5 * torch.tanh(10.0 * (5.0 - D))
         pair_pred = pair_pred.squeeze(-1) * (D != 0) * tap
 

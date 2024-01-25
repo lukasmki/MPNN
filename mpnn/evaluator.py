@@ -54,6 +54,9 @@ class Evaluator:
         nneigh = np.max(shapes[::, 2])
 
         for k, v in output.items():
+            # for arr in output[k]:
+            #     print(arr.shape)
+
             output[k] = np.concatenate(output[k], axis=0)
 
         if self.output_path:
